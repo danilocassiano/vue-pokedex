@@ -1,9 +1,15 @@
 <template>
-  <div>
-    <h1 className="bg-red-500 text-4xl font-bold">Pokedex</h1>
-  </div>
+  <Main /> 
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
+import Main from '../src/views/Main.vue';
 
+export default defineComponent({
+  name: 'App',
+  components: {
+    Main,
+  },
+});
 </script>
