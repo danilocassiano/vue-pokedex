@@ -7,7 +7,7 @@
           <img src="../../assets/Pokedex.svg" class="h-6 md:h-8" alt="PokeNome" />
         </a>
   
-        <!-- Input de Pesquisa (Mobile e Desktop) -->
+        <!-- Input de Pesquisa -->
         <div class="flex items-center space-x-3 w-full md:w-auto my-3 md:my-0">
           <div class="relative flex items-center w-80 md:w-96">
             <img
@@ -22,7 +22,7 @@
             />
           </div>
   
-          <!-- Botão para abrir o modal -->
+          <!-- Botão do modal -->
           <button
             class="flex items-center justify-center w-10 h-10 text-blue-600 bg-white border rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
