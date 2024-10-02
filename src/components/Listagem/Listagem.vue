@@ -4,7 +4,7 @@
       <div
         v-for="(pokemon, index) in paginatedPokemons"
         :key="index"
-        class="relative p-4 bg-white border border-gray-200 rounded-2xl shadow-sm transition duration-300 ease-in-out transform hover:scale-105 hover:border-blue-500"
+        class="relative p-4 cursor-pointer bg-white border border-gray-200 rounded-2xl shadow-sm transition duration-300 ease-in-out transform hover:scale-105 hover:border-blue-500"
       >
         <div class="absolute bottom-2 left-2 right-2 top-2 bg-gray-100 rounded-lg -z-10"></div>
         <p class="text-gray-300 font-semibold text-right z-10">#{{ pokemon.id }}</p>
@@ -25,18 +25,19 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { ref, computed, onMounted } from "vue";
-
-interface Pokemon {
-  id: number;
-  name: string;
-}
 
 export default {
   name: "Listagem",
-  setup() {
-    const pokemons = ref<Pokemon[]>([]);
+  props: {
+    busca: {
+      type: String,
+      default: ""
+    }
+  },
+  setup(props) {
+    const pokemons = ref([]);
     const currentPage = ref(1);
     const itemsPerPage = 24;
 
@@ -44,20 +45,27 @@ export default {
       try {
         const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1302");
         const data = await res.json();
-        pokemons.value = data.results.map((pokemon: { name: string }, index: number) => ({ ...pokemon, id: index + 1 } as Pokemon));
+        pokemons.value = data.results.map((pokemon, index) => ({ ...pokemon, id: index + 1 }));
       } catch (error) {
         console.error("Erro ao buscar os pokémons:", error);
       }
     };
 
-    const getPokemonImageUrl = (id: number) =>
+    const getPokemonImageUrl = (id) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${id}.svg`;
 
     const totalPages = computed(() => Math.ceil(pokemons.value.length / itemsPerPage));
 
+    
+    const filteredPokemons = computed(() => {
+      return pokemons.value.filter((pokemon) =>
+        pokemon.name.toLowerCase().includes(props.busca.toLowerCase())
+      );
+    });
+
     const paginatedPokemons = computed(() => {
       const startIndex = (currentPage.value - 1) * itemsPerPage;
-      return pokemons.value.slice(startIndex, startIndex + itemsPerPage);
+      return filteredPokemons.value.slice(startIndex, startIndex + itemsPerPage);
     });
 
     const nextPage = () => {
@@ -73,6 +81,7 @@ export default {
     return {
       currentPage,
       paginatedPokemons,
+      filteredPokemons,
       totalPages,
       nextPage,
       prevPage,
@@ -81,9 +90,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-button:disabled {
-  cursor: not-allowed;
-}
-</style>

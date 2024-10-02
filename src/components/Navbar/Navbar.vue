@@ -1,13 +1,13 @@
 <template>
   <nav class="bg-customRed p-4">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
-      
-      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+     
+      <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img src="../../assets/pokeball.svg" class="h-6 md:h-8" alt="PokeLogo" />
         <img src="../../assets/Pokedex.svg" class="h-6 md:h-8" alt="PokeNome" />
       </a>
 
-      <!-- Input de Pesquisa -->
+      
       <div class="flex items-center space-x-3 w-full md:w-auto my-3 md:my-0">
         <div class="relative flex items-center w-80 md:w-96">
           <img
@@ -16,13 +16,15 @@
             alt="search"
           />
           <input
+            v-model="buscaPokemon"
             type="text"
-            placeholder="Buscar"
+            id="pokemonBusca"
+            placeholder="Buscar Pokémon"
+            @input="emitBuscaPokemon" 
             class="border border-gray-300 rounded-full py-1.5 pl-12 pr-3 w-full font-semibold text-sm text-gray-700 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        <!-- Botão para abrir o modal -->
+        
         <button
           @click="openModal"
           class="flex items-center justify-center w-10 h-10 text-blue-600 bg-white border rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -43,7 +45,8 @@
           </svg>
         </button>
       </div>
-    </div>    
+    </div>
+    
     <ModalComponent :isOpen="isModalOpen" @close="closeModal" />
   </nav>
 </template>
@@ -57,8 +60,14 @@ export default {
   components: {
     ModalComponent,
   },
-  setup() {
+  setup(_, { emit }) {
     const isModalOpen = ref(false);
+    const buscaPokemon = ref("");
+
+    
+    const emitBuscaPokemon = () => {
+      emit("update:busca", buscaPokemon.value);
+    };
 
     const openModal = () => {
       isModalOpen.value = true;
@@ -70,6 +79,8 @@ export default {
 
     return {
       isModalOpen,
+      buscaPokemon,
+      emitBuscaPokemon,
       openModal,
       closeModal,
     };
