@@ -43,7 +43,7 @@ export default {
 
     const fetchPokemons = async () => {
       try {
-        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1302");
+        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
         const data = await res.json();
         pokemons.value = data.results.map((pokemon, index) => ({ ...pokemon, id: index + 1 }));
       } catch (error) {
