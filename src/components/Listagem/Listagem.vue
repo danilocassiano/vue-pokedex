@@ -25,8 +25,13 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, computed, onMounted } from "vue";
+
+interface Pokemon {
+  name: string;
+  id: number;
+}
 
 export default {
   name: "Listagem",
@@ -37,37 +42,60 @@ export default {
     }
   },
   setup(props) {
-    const pokemons = ref([]);
+    
+    const pokemons = ref<Pokemon[]>([]);
     const currentPage = ref(1);
     const itemsPerPage = 24;
-
+    
     const fetchPokemons = async () => {
       try {
         const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
+        if (!res.ok) throw new Error(`Erro ao buscar dados: ${res.statusText}`);
+
         const data = await res.json();
-        pokemons.value = data.results.map((pokemon, index) => ({ ...pokemon, id: index + 1 }));
+        console.log("Dados recebidos:", data); // Depuração: Verificar a estrutura dos dados
+
+        pokemons.value = data.results.map((pokemon: any, index: number) => ({
+          ...pokemon,
+          id: index + 1,
+        }));
       } catch (error) {
         console.error("Erro ao buscar os pokémons:", error);
       }
     };
-
-    const getPokemonImageUrl = (id) =>
+    
+    const getPokemonImageUrl = (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${id}.svg`;
 
+    
     const totalPages = computed(() => Math.ceil(pokemons.value.length / itemsPerPage));
 
     
     const filteredPokemons = computed(() => {
+      const busca = props.busca.trim().toLowerCase();
+      console.log("Valor de busca:", busca); // Depuração: Valor de busca
+
+      if (!busca) return pokemons.value;
+
+      const buscaPorId = parseInt(busca);
+
+      
+      if (!isNaN(buscaPorId)) {
+        return pokemons.value.filter((pokemon) => pokemon.id === buscaPorId);
+      }
+
       return pokemons.value.filter((pokemon) =>
-        pokemon.name.toLowerCase().includes(props.busca.toLowerCase())
+        pokemon.name.toLowerCase().includes(busca)
       );
     });
 
+    
     const paginatedPokemons = computed(() => {
       const startIndex = (currentPage.value - 1) * itemsPerPage;
       return filteredPokemons.value.slice(startIndex, startIndex + itemsPerPage);
     });
 
+    
     const nextPage = () => {
       if (currentPage.value < totalPages.value) currentPage.value++;
     };
@@ -76,6 +104,7 @@ export default {
       if (currentPage.value > 1) currentPage.value--;
     };
 
+    
     onMounted(fetchPokemons);
 
     return {
