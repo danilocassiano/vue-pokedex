@@ -1,34 +1,40 @@
 <template>
   <div class="bg-white p-4 m-4 rounded-2xl">
-    <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-      <div
-        v-for="(pokemon, index) in paginatedPokemons"
-        :key="index"
-        class="relative p-4 cursor-pointer bg-white border border-gray-200 rounded-2xl shadow-sm transition duration-300 ease-in-out transform hover:scale-105 hover:border-blue-500"
-        @click="openModal(pokemon)"
-      >
-        <div class="absolute bottom-2 left-2 right-2 top-2 bg-gray-100 rounded-lg -z-10"></div>
-        <p class="text-gray-300 font-semibold text-right z-10">#{{ pokemon.id }}</p>
-        <img :src="getPokemonImageUrl(pokemon.id)" alt="Pokemon Image" class="h-20 w-20 mx-auto z-10" />
-        <h3 class="font-roboto text-center font-semibold text-[0.8125rem] z-10">{{ pokemon.name }}</h3>
-      </div>
+    <div v-if="loading" class="flex items-center justify-center h-40">
+      <p class="text-lg font-semibold text-red-600 animate-pulse">Carregando Pokémon...</p>
     </div>
+    
+    <div v-else>
+      <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+        <div
+          v-for="(pokemon, index) in paginatedPokemons"
+          :key="index"
+          class="relative p-4 cursor-pointer bg-white border border-gray-200 rounded-2xl shadow-sm transition duration-300 ease-in-out transform hover:scale-105 hover:border-blue-500"
+          @click="openModal(pokemon)"
+        >
+          <div class="absolute bottom-2 left-2 right-2 top-2 bg-gray-100 rounded-lg -z-10"></div>
+          <p class="text-gray-300 font-semibold text-right z-10">#{{ pokemon.id }}</p>
+          <img :src="getPokemonImageUrl(pokemon.id)" alt="Pokemon Image" class="h-20 w-20 mx-auto z-10" />
+          <h3 class="font-roboto text-center font-semibold text-[0.8125rem] z-10">{{ pokemon.name }}</h3>
+        </div>
+      </div>
 
-    <CardPokemon
-      v-if="isModalOpen && selectedPokemon"
-      :isOpen="isModalOpen"
-      :pokemon="selectedPokemon"
-      @close="closeCard"
-    />
+      <CardPokemon
+        v-if="isModalOpen && selectedPokemon"
+        :isOpen="isModalOpen"
+        :pokemon="selectedPokemon"
+        @close="closeCard"
+      />
 
-    <div class="flex justify-between items-center mt-4">
-      <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50">
-        Anterior
-      </button>
-      <span class="font-semibold">Página {{ currentPage }}</span>
-      <button @click="nextPage" :disabled="currentPage >= totalPages" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50">
-        Próxima
-      </button>
+      <div class="flex justify-between items-center mt-4">
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50">
+          Anterior
+        </button>
+        <span class="font-semibold">Página {{ currentPage }}</span>
+        <button @click="nextPage" :disabled="currentPage >= totalPages" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50">
+          Próxima
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -67,6 +73,7 @@ export default {
     const itemsPerPage = 24;
     const isModalOpen = ref(false);
     const selectedPokemon = ref<Pokemon | null>(null);
+    const loading = ref(true); 
 
     const fetchPokemons = async () => {
       try {
@@ -74,7 +81,6 @@ export default {
         if (!res.ok) throw new Error(`Erro ao buscar dados: ${res.statusText}`);
 
         const data = await res.json();   
-             
 
         pokemons.value = await Promise.all(
           data.results.map(async (pokemon: any, index: number) => {
@@ -92,9 +98,10 @@ export default {
             };
           })
         );
-        
       } catch (error) {
         console.error("Erro ao buscar os pokémons:", error);
+      } finally {
+        loading.value = false; 
       }
     };
 
@@ -127,7 +134,6 @@ export default {
       return filteredPokemons.value.slice(startIndex, startIndex + itemsPerPage);
     });
 
-    
     watch(() => props.busca, () => {
       currentPage.value = 1; 
     });
@@ -167,6 +173,7 @@ export default {
       selectedPokemon,
       openModal,
       closeCard,
+      loading, 
     };
   },
 };
