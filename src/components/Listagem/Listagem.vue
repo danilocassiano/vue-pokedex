@@ -31,6 +31,7 @@ import { ref, computed, onMounted } from "vue";
 interface Pokemon {
   name: string;
   id: number;
+  types: string[]; 
 }
 
 export default {
@@ -39,63 +40,68 @@ export default {
     busca: {
       type: String,
       default: ""
+    },
+    buscaTipo: {
+      type: Array as () => string[],
+      default: () => []
     }
   },
   setup(props) {
-    
     const pokemons = ref<Pokemon[]>([]);
     const currentPage = ref(1);
     const itemsPerPage = 24;
-    
+
     const fetchPokemons = async () => {
       try {
         const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
         if (!res.ok) throw new Error(`Erro ao buscar dados: ${res.statusText}`);
 
         const data = await res.json();
-        console.log("Dados recebidos:", data); // Depuração: Verificar a estrutura dos dados
-
-        pokemons.value = data.results.map((pokemon: any, index: number) => ({
-          ...pokemon,
-          id: index + 1,
-        }));
+        pokemons.value = await Promise.all(
+          data.results.map(async (pokemon: any, index: number) => {
+            const pokemonDetails = await fetch(pokemon.url);
+            const details = await pokemonDetails.json();
+            return {
+              ...pokemon,
+              id: index + 1,
+              types: details.types.map((type: any) => type.type.name),
+            };
+          })
+        );
       } catch (error) {
         console.error("Erro ao buscar os pokémons:", error);
       }
     };
-    
+
     const getPokemonImageUrl = (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${id}.svg`;
 
-    
     const totalPages = computed(() => Math.ceil(pokemons.value.length / itemsPerPage));
 
-    
     const filteredPokemons = computed(() => {
       const busca = props.busca.trim().toLowerCase();
-      console.log("Valor de busca:", busca); // Depuração: Valor de busca
 
-      if (!busca) return pokemons.value;
+      const filteredByNameOrId = pokemons.value.filter((pokemon) => {
+        const buscaPorId = parseInt(busca);
+        return !isNaN(buscaPorId)
+          ? pokemon.id === buscaPorId
+          : pokemon.name.toLowerCase().includes(busca);
+      });
 
-      const buscaPorId = parseInt(busca);
-
-      
-      if (!isNaN(buscaPorId)) {
-        return pokemons.value.filter((pokemon) => pokemon.id === buscaPorId);
+      if (props.buscaTipo.length > 0) {
+        return filteredByNameOrId.filter((pokemon) =>
+          pokemon.types.some((type) => props.buscaTipo.includes(type))
+        );
       }
 
-      return pokemons.value.filter((pokemon) =>
-        pokemon.name.toLowerCase().includes(busca)
-      );
+      return filteredByNameOrId;
     });
 
-    
     const paginatedPokemons = computed(() => {
       const startIndex = (currentPage.value - 1) * itemsPerPage;
       return filteredPokemons.value.slice(startIndex, startIndex + itemsPerPage);
     });
 
-    
     const nextPage = () => {
       if (currentPage.value < totalPages.value) currentPage.value++;
     };
@@ -104,13 +110,11 @@ export default {
       if (currentPage.value > 1) currentPage.value--;
     };
 
-    
     onMounted(fetchPokemons);
 
     return {
       currentPage,
       paginatedPokemons,
-      filteredPokemons,
       totalPages,
       nextPage,
       prevPage,

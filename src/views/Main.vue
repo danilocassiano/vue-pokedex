@@ -1,35 +1,42 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-customRed">     
-    <Navbar @update:busca="updateBusca" />
-    <Listagem :busca="busca" />
-    <Rodape />    
+  <div class="min-h-screen flex flex-col bg-customRed">
+    <Navbar @update:busca="updateBusca" @applyFilter="updateBuscaTipo" />
+    <Listagem :busca="busca" :buscaTipo="buscaTipo" />
+    <Rodape />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { ref } from 'vue';
 import Navbar from '../components/Navbar/Navbar.vue';
 import Listagem from '../components/Listagem/Listagem.vue';
 import Rodape from '../components/Rodape/Rodape.vue';
 
-export default defineComponent({
-  name: 'Main',
+export default {
   components: {
     Navbar,
+    Listagem,
     Rodape,
-    Listagem     
   },
   setup() {
     const busca = ref("");
+    const buscaTipo = ref<string[]>([]);
 
-    const updateBusca = (valor: string) => {
-      busca.value = valor;
+    const updateBusca = (novaBusca: string) => {
+      busca.value = novaBusca;
+    };
+
+    const updateBuscaTipo = (tipos: string[]) => {
+      buscaTipo.value = tipos; 
+      console.log("Tipos filtrados:", buscaTipo.value); 
     };
 
     return {
       busca,
+      buscaTipo,
       updateBusca,
+      updateBuscaTipo,
     };
   },
-});
+};
 </script>

@@ -1,14 +1,12 @@
 <template>
   <nav class="bg-customRed p-4">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
-     
-      <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
+      <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img src="../../assets/pokeball.svg" class="h-6 md:h-8" alt="PokeLogo" />
         <img src="../../assets/Pokedex.svg" class="h-6 md:h-8" alt="PokeNome" />
       </a>
 
-      
-      <div class="flex items-center space-x-3 w-full md:w-auto my-3 md:my-0">
+      <div class="flex items-center w-full md:w-auto my-3 md:my-0 space-x-3">
         <div class="relative flex items-center w-80 md:w-96">
           <img
             src="../../assets/search.svg"
@@ -20,11 +18,11 @@
             type="text"
             id="pokemonBusca"
             placeholder="Buscar Pokémon"
-            @input="emitBuscaPokemon" 
+            @input="emitBuscaPokemon"
             class="border border-gray-300 rounded-full py-1.5 pl-12 pr-3 w-full font-semibold text-sm text-gray-700 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <button
           @click="openModal"
           class="flex items-center justify-center w-10 h-10 text-blue-600 bg-white border rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -46,8 +44,12 @@
         </button>
       </div>
     </div>
-    
-    <ModalComponent :isOpen="isModalOpen" @close="closeModal" />
+
+    <ModalComponent
+      :isOpen="isModalOpen"
+      @close="closeModal"
+      @applyFilter="applyFilter"
+    />
   </nav>
 </template>
 
@@ -64,7 +66,6 @@ export default {
     const isModalOpen = ref(false);
     const buscaPokemon = ref("");
 
-    
     const emitBuscaPokemon = () => {
       emit("update:busca", buscaPokemon.value);
     };
@@ -77,12 +78,18 @@ export default {
       isModalOpen.value = false;
     };
 
+    const applyFilter = (tipos: string[]) => {
+      emit('applyFilter', tipos); 
+      closeModal(); 
+    };
+
     return {
       isModalOpen,
       buscaPokemon,
       emitBuscaPokemon,
       openModal,
       closeModal,
+      applyFilter,
     };
   },
 };
